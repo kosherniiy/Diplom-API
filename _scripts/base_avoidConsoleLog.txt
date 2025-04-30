@@ -1,0 +1,17 @@
+function main(options) {
+  const {
+    base: {
+      sourceCode
+    }
+  } = options
+
+  const newCode = `
+    const printOutput = console.log
+    console.log = null
+    ${sourceCode}
+  `
+
+  return {
+    newCode
+  }
+}

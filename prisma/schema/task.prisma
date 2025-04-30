@@ -1,0 +1,32 @@
+model Script {
+  id                      String       @id @default(uuid())
+  name                    String
+  sourceCode              String
+  parameters              Parameter[]
+  dependenciesAsOriginal  Dependency[] @relation("OriginalScript")
+  dependenciesAsDependant Dependency[] @relation("DependantScript")
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+  User                    User?        @relation(fields: [userId], references: [id])
+  userId                  Int?
+}
+
+model Parameter {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+  scriptId  String
+  script    Script   @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Dependency {
+  id          String   @id @default(uuid())
+  originalId  String
+  dependantId String
+  original    Script   @relation("OriginalScript", fields: [originalId], references: [id], onDelete: Cascade)
+  dependant   Script   @relation("DependantScript", fields: [dependantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

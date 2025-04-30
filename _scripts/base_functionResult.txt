@@ -1,0 +1,45 @@
+// function result
+function main(options, prev) {
+  const {
+    services,
+    base,
+    params
+  } = options
+
+  const { _avoidConsoleLog } = prev
+  const { newCode: code } = _avoidConsoleLog
+
+  const { runCode } = services
+  const {
+    functionName,
+    expectedResult,
+    functionParams
+  } = params
+
+  const newCode = `
+    ${code}\n
+    ${functionName}(${functionParams.join(',')})
+  `
+
+  const { output } = runCode(newCode)
+
+  return {
+    passed: output === expectedResult
+  }
+}
+
+interface BaseOptions {
+  sourceCode: string
+}
+
+type Options = Record<string, BaseOptions>
+
+interface Services {
+  runCode: RunCodeService
+}
+
+interface RunCodeService {
+  runCode: (sourceCode: string) => Promise<{
+    output: string
+  }>
+}

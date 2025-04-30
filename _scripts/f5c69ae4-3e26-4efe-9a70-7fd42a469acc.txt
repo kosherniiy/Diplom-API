@@ -1,0 +1,1 @@
+function main(options){return{newCode:`const printOutput=console.log;console.log=null;${options.base.sourceCode}`};}
