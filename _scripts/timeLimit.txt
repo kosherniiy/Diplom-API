@@ -1,0 +1,7 @@
+async function main(options) {
+  const {common, params} = options
+  const {code} = common
+  const {functionName, functionParams, expected} = params
+  const {result} = runCode({functionName, functionParams, code})
+  return {passed: result === expected}
+}

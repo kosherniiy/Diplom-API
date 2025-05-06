@@ -1,0 +1,47 @@
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function generateRandomArray(length = 10, max = 100) {
+  return Array.from({ length }, () => Math.floor(Math.random() * max));
+}
+
+function bubbleSort(arr) {
+  const n = arr.length;
+  for (let i = 0; i < n - 1; i++) {
+    let swapped = false;
+    for (let j = 0; j < n - i - 1; j++) {
+      if (arr[j] > arr[j + 1]) {
+        // Обмен элементов
+        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+        swapped = true;
+      }
+    }
+    if (!swapped) break; // Оптимизация: если обменов не было, массив отсортирован
+  }
+  return arr;
+}
+
+function quickSort(arr) {
+  if (arr.length <= 1) return arr;
+
+  const pivot = arr[Math.floor(arr.length / 2)];
+  const left = [];
+  const right = [];
+  const equal = [];
+
+  for (const num of arr) {
+    if (num < pivot) left.push(num);
+    else if (num > pivot) right.push(num);
+    else equal.push(num);
+  }
+
+  return [...quickSort(left), ...equal, ...quickSort(right)];
+}
+
+async function foo() {
+  let s = performance.now()
+  const largeArray = generateRandomArray(10000, 100000);
+  bubbleSort([...largeArray]);
+  return Math.round(performance.now() - s,3) + ' ms'
+}

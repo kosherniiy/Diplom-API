@@ -12,10 +12,6 @@ class ParameterDto {
 }
 
 export class CreateScriptDto {
-  @IsArray()
-  @IsString({ each: true })
-  dependencies: string[];
-
   @IsString()
   @IsNotEmpty()
   sourceCode: string;

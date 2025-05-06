@@ -1,15 +1,23 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { ScriptService } from './script.service';
+import { Controller, Post, HttpCode, HttpStatus, UseInterceptors, UploadedFile, Body } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import * as fs from 'fs/promises';
 import { CreateScriptDto } from './create-script.dto';
+import { ScriptService } from './script.service';
 
 @Controller('scripts')
 export class ScriptController {
-  constructor(private scriptService: ScriptService) { }
+  constructor(private readonly scriptService: ScriptService) { }
 
-  @Post("")
+  @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createScriptDto: CreateScriptDto) {
+  async create(
+    @Body() createScriptDto: CreateScriptDto
+  ) {
+    // Создаем скрипт
     const script = await this.scriptService.createScript(createScriptDto);
+
     return {
       message: 'Скрипт успешно создан',
       data: script,

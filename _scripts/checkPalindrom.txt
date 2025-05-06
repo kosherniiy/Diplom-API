@@ -1,0 +1,7 @@
+async function main(options) {
+    const { params, common } = options;
+    const { code } = common;
+    const { functionName, inputValue } = params;
+    const { result } = await runCode({ code, functionName, functionParams: inputValue });
+    return { passed: result === (inputValue === inputValue.split("").reverse().join("")) };
+}

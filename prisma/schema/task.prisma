@@ -1,15 +1,11 @@
 model Script {
-  id                      String           @id @default(uuid())
-  name                    String
-  sourceCode              String
-  parameters              Parameter[]
-  dependenciesAsOriginal  Dependency[]     @relation("OriginalScript")
-  dependenciesAsDependant Dependency[]     @relation("DependantScript")
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
-  User                    User?            @relation(fields: [userId], references: [id])
-  userId                  Int?
-  TemplateScript          TemplateScript[]
+  name       String           @id
+  parameters Parameter[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  Author     User?            @relation(fields: [authorId], references: [id])
+  authorId   Int?
+  templates  TemplateScript[]
 }
 
 model Parameter {
@@ -17,19 +13,20 @@ model Parameter {
   name            String
   type            String
   scriptId        String
-  script          Script            @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+  script          Script            @relation(fields: [scriptId], references: [name], onDelete: Cascade)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   ObjectParameter ObjectParameter[]
+  ValueParameter  ValueParameter[]
 }
 
 model ValueParameter {
-  id         Int      @id @default(autoincrement())
-  testCaseId Int
-  value      String
-  testCase   TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          Int       @id @default(autoincrement())
+  parameterId String
+  testCaseId  Int
+  value       String
+  parameter   Parameter @relation(fields: [parameterId], references: [id], onDelete: Cascade)
+  TestCase    TestCase  @relation(fields: [testCaseId], references: [id])
 }
 
 model ObjectParameter {
@@ -39,82 +36,50 @@ model ObjectParameter {
   key         String
   value       String
   parameter   Parameter @relation(fields: [parameterId], references: [id], onDelete: Cascade)
-  testCase    TestCase  @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model Dependency {
-  id          String   @id @default(uuid())
-  originalId  String
-  dependantId String
-  original    Script   @relation("OriginalScript", fields: [originalId], references: [id], onDelete: Cascade)
-  dependant   Script   @relation("DependantScript", fields: [dependantId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  TestCase    TestCase  @relation(fields: [testCaseId], references: [id])
 }
 
 model Task {
-  id              Int        @id @default(autoincrement())
-  authorId        Int
-  instructionsSrc String
-  author          User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  files           File[]
-  testCases       TestCase[]
-  solutions       Solution[]
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-}
-
-model File {
-  id         Int      @id @default(autoincrement())
-  taskId     Int
-  sourceCode String
-  fileName   String
-  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id           Int        @id @default(autoincrement())
+  authorId     Int?
+  instructions String
+  name         String
+  author       User?      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  templateName String
+  template     Template   @relation(fields: [templateName], references: [name])
+  testCases    TestCase[]
+  solutions    Solution[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model TestCase {
   id               Int               @id @default(autoincrement())
   taskId           Int
-  templateId       Int
-  name             String
-  description      String
   task             Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  template         Template          @relation(fields: [templateId], references: [id], onDelete: Cascade)
   results          Result[]
   valueParameters  ValueParameter[]
   objectParameters ObjectParameter[]
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
 }
 
 model Template {
-  id              Int              @id @default(autoincrement())
-  authorId        Int
-  name            String
-  description     String
-  type            String
-  author          User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  testCases       TestCase[]
-  templateScripts TemplateScript[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  authorId  Int?
+  name      String           @id
+  author    User?            @relation(fields: [authorId], references: [id])
+  scripts   TemplateScript[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  Task      Task[]
 }
 
 model TemplateScript {
-  id          Int      @id @default(autoincrement())
-  scriptId    String
-  templateId  Int
-  name        String
-  description String
-  order       Int
-  script      Script   @relation(fields: [scriptId], references: [id], onDelete: Cascade)
-  template    Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  templateName String
+  scriptName   String
+  order        Int
+  template     Template @relation(fields: [templateName], references: [name])
+  script       Script   @relation(fields: [scriptName], references: [name])
+  createdAt    DateTime @default(now())
 }
 
 model Solution {

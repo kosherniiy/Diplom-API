@@ -21,50 +21,30 @@ export class ScriptService {
     }
   }
 
-  async createScript(dto: CreateScriptDto) {
-    // Проверяем существование всех зависимых скриптов
-    if (dto.dependencies.length > 0) {
-      const existingScripts = await this.prisma.script.findMany({
-        where: { id: { in: dto.dependencies } },
-      });
-
-      if (existingScripts.length !== dto.dependencies.length) {
-        throw new NotFoundException('Один или несколько зависимых скриптов не найдены');
-      }
-    }
+  async createScript(dto: CreateScriptDto & { sourceCode: string }) {
 
     // Создаем скрипт с параметрами и зависимостями
     const script = await this.prisma.script.create({
       data: {
         name: dto.name,
-        sourceCode: dto.sourceCode,
         parameters: {
           create: dto.parameters.map(param => ({
             name: param.name,
             type: param.type,
           })),
         },
-        dependenciesAsOriginal: {
-          create: dto.dependencies.map(depId => ({
-            dependantId: depId,
-          })),
-        },
       },
       include: {
         parameters: true,
-        dependenciesAsOriginal: {
-          include: { dependant: true },
-        },
       },
     });
 
     // Сохраняем sourceCode в файл
-    const filePath = path.join(this.scriptsDir, `${script.id}.txt`);
+    const filePath = path.join(this.scriptsDir, `${script.name}.txt`);
     try {
       await fs.writeFile(filePath, dto.sourceCode, 'utf-8');
     } catch (error) {
-      // Логируем ошибку, но не прерываем создание записи в БД
-      console.error(`Ошибка при сохранении файла скрипта ${script.id}:`, error);
+      console.error(`Ошибка при сохранении файла скрипта ${script.name}:`, error);
       throw new InternalServerErrorException(`Не удалось сохранить файл скрипта: ${error.message}`);
     }
 
